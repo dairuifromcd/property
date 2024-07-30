@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Growth Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            background-color: #f9f9f9;
+        }
+        .section {
+            width: 50%;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        canvas {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="section">
+        <h1>Property Growth Calculator 1</h1>
+        <form id="propertyForm1">
+            <label for="initialValue1">Initial Property Value ($):</label>
+            <input type="text" id="initialValue1" required oninput="formatNumber('initialValue1')" onblur="formatNumber('initialValue1', true)"><br><br>
+            <label for="cashflow1">Cashflow per Year (%):</label>
+            <input type="number" id="cashflow1" required><br><br>
+            <label for="growth1">Capital Growth per Year (%):</label>
+            <input type="number" id="growth1" required><br><br>
+            <label for="years1">Number of Years:</label>
+            <input type="number" id="years1" required><br><br>
+            <button type="button" onclick="calculateGrowth('1')">Calculate</button>
+        </form>
+        <div class="output" id="output1"></div>
+        <canvas id="chart1"></canvas>
+    </div>
+
+    <div class="section">
+        <h1>Property Growth Calculator 2</h1>
+        <form id="propertyForm2">
+            <label for="initialValue2">Initial Property Value ($):</label>
+            <input type="text" id="initialValue2" required oninput="formatNumber('initialValue2')" onblur="formatNumber('initialValue2', true)"><br><br>
+            <label for="cashflow2">Cashflow per Year (%):</label>
+            <input type="number" id="cashflow2" required><br><br>
+            <label for="growth2">Capital Growth per Year (%):</label>
+            <input type="number" id="growth2" required><br><br>
+            <label for="years2">Number of Years:</label>
+            <input type="number" id="years2" required><br><br>
+            <button type="button" onclick="calculateGrowth('2')">Calculate</button>
+        </form>
+        <div class="output" id="output2"></div>
+        <canvas id="chart2"></canvas>
+    </div>
+
+    <script>
+        let charts = {};
+
+        function formatNumber(id, isFinal = false) {
+            const input = document.getElementById(id);
+            let value = input.value.replace(/,/g, '');
+            if (!isNaN(value) && value !== '') {
+                if (isFinal) {
+                    input.value = parseFloat(value).toLocaleString();
+                } else {
+                    input.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                }
+            } else {
+                input.value = '';
+            }
+        }
+
+        function calculateGrowth(id) {
+            const initialValue = parseFloat(document.getElementById('initialValue' + id).value.replace(/,/g, ''));
+            const cashflowPercent = parseFloat(document.getElementById('cashflow' + id).value) / 100;
+            const growthPercent = parseFloat(document.getElementById('growth' + id).value) / 100;
+            const years = parseInt(document.getElementById('years' + id).value);
+            let results = '<h2>Results:</h2><table><tr><th>Year</th><th>Cashflow of the Year ($)</th><th>Accumulated Cashflow ($)</th><th>Updated Property Price ($)</th><th>Total ($)</th></tr>';
+
+            let currentValue = initialValue;
+            let accumulatedCashflow = 0;
+            const annualCashflow = initialValue * cashflowPercent;
+            const totalValues = [];
+
+            for (let year = 1; year <= years; year++) {
+                accumulatedCashflow += annualCashflow;
+                currentValue *= (1 + growthPercent);
+                const total = accumulatedCashflow + currentValue;
+                totalValues.push(total);
+                results += `<tr><td>${year}</td><td>${Math.round(annualCashflow).toLocaleString()}</td><td>${Math.round(accumulatedCashflow).toLocaleString()}</td><td>${Math.round(currentValue).toLocaleString()}</td><td>${Math.round(total).toLocaleString()}</td></tr>`;
+            }
+            results += '</table>';
+            document.getElementById('output' + id).innerHTML = results;
+
+            // Destroy the old chart if it exists
+            if (charts[id]) {
+                charts[id].destroy();
+            }
+
+            // Create the new chart
+            const ctx = document.getElementById('chart' + id).getContext('2d');
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: years }, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'Total Value',
+                        data: totalValues,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Total ($)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
