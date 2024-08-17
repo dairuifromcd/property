@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inflation Calculator</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .calculator-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            width: 350px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .result {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 80px; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h1>Inflation Calculator</h1>
+        <form id="inflationForm">
+            <label for="dollarValue">Dollar Value ($):</label>
+            <input type="number" id="dollarValue" value="100" required>
+
+            <label for="years">Years:</label>
+            <input type="number" id="years" value="1" required>
+
+            <label for="inflationRate">Inflation Rate (% per year):</label>
+            <input type="number" id="inflationRate" value="2.5" step="0.1" required>
+
+            <button type="submit">Calculate</button>
+        </form>
+        <div class="result" id="result">
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('inflationForm');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const dollarValue = parseFloat(document.getElementById('dollarValue').value);
+            const years = parseInt(document.getElementById('years').value);
+            const inflationRate = parseFloat(document.getElementById('inflationRate').value) / 100;
+
+            // Calculate the future value after inflation
+            let futureValue = dollarValue;
+            for (let i = 0; i < years; i++) {
+                futureValue *= (1 + inflationRate);
+            }
+
+            // Calculate the diminished value due to inflation
+            let equivalentValue = dollarValue;
+            for (let i = 0; i < years; i++) {
+                equivalentValue /= (1 + inflationRate);
+            }
+
+            // Display both future value and equivalent value
+            resultDiv.innerHTML = `
+                <p>Future Value: $${dollarValue.toFixed(2)} will be worth $${futureValue.toFixed(2)} </p>
+                <p>Equivalent Value in today's dollars: $${equivalentValue.toFixed(2)}</p>
+            `;
+        });
+    </script>
+
+</body>
+</html>
